@@ -1,0 +1,67 @@
+sequenceDiagram
+    participant Usuario
+    participant Dashboard
+    participant API_tRPC
+    participant DB_Functions
+    participant MySQL
+    participant Python_ML
+    participant XGBoost
+    participant LSTM
+    participant Ensemble
+
+    Usuario->>Dashboard: Selecciona entidad y horizonte
+    Dashboard->>API_tRPC: trpc.predicciones.getByEntidad()
+    
+    API_tRPC->>DB_Functions: getPrediccionesByEntidad(entidadId, horizonte)
+    DB_Functions->>MySQL: SELECT * FROM predicciones WHERE...
+    
+    alt Predicciones ya existen
+        MySQL-->>DB_Functions: Retorna predicciones existentes
+        DB_Functions-->>API_tRPC: Predicciones con IC 95%
+        API_tRPC-->>Dashboard: JSON con predicciones
+        Dashboard-->>Usuario: Muestra gráfico con bandas de confianza
+    else Predicciones no existen
+        MySQL-->>DB_Functions: Retorna vacío
+        DB_Functions->>Python_ML: Solicitar generación de predicciones
+        
+        Python_ML->>MySQL: SELECT recaudos históricos
+        MySQL-->>Python_ML: Datos históricos con features
+        
+        Python_ML->>Python_ML: Preparar datos (escalado, reshape)
+        
+        par Predicción paralela
+            Python_ML->>XGBoost: predict(X)
+            XGBoost-->>Python_ML: y_pred_xgboost
+        and
+            Python_ML->>LSTM: predict(X)
+            LSTM-->>Python_ML: y_pred_lstm
+        end
+        
+        Python_ML->>Ensemble: combinar_predicciones(xgb, lstm)
+        Ensemble->>Ensemble: Calcular promedio ponderado
+        Ensemble->>Ensemble: Calcular IC 95% (percentiles)
+        Ensemble-->>Python_ML: y_pred_ensemble + IC
+        
+        Python_ML->>MySQL: INSERT INTO predicciones VALUES(...)
+        MySQL-->>Python_ML: OK
+        
+        Python_ML-->>DB_Functions: Predicciones generadas
+        DB_Functions-->>API_tRPC: Predicciones con IC 95%
+        API_tRPC-->>Dashboard: JSON con predicciones
+        Dashboard-->>Usuario: Muestra gráfico con bandas de confianza
+    end
+    
+    Usuario->>Dashboard: Solicita actualizar predicciones
+    Dashboard->>API_tRPC: trpc.predicciones.regenerar()
+    
+    API_tRPC->>Python_ML: Forzar regeneración
+    Python_ML->>MySQL: DELETE FROM predicciones WHERE entidadId=...
+    Python_ML->>Python_ML: Repetir proceso de predicción
+    Python_ML->>MySQL: INSERT nuevas predicciones
+    MySQL-->>Python_ML: OK
+    
+    Python_ML-->>API_tRPC: Predicciones actualizadas
+    API_tRPC-->>Dashboard: JSON con nuevas predicciones
+    Dashboard-->>Usuario: Muestra gráfico actualizado
+    
+    Note over Usuario,Ensemble: Proceso completo: 2-5 segundos<br/>Caché de predicciones: 24 horas

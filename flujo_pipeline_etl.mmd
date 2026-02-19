@@ -1,0 +1,72 @@
+flowchart TD
+    Start([Inicio Pipeline ETL]) --> LoadFile[Cargar BaseRentasCedidas.xlsx]
+    LoadFile --> ValidateFile{¿Archivo válido?}
+    
+    ValidateFile -->|No| ErrorFile[Error: Archivo no encontrado]
+    ErrorFile --> End([Fin con Error])
+    
+    ValidateFile -->|Sí| ExtractData[Extraer datos con pandas]
+    ExtractData --> CheckColumns{¿Columnas correctas?}
+    
+    CheckColumns -->|No| ErrorColumns[Error: Columnas faltantes]
+    ErrorColumns --> End
+    
+    CheckColumns -->|Sí| CleanData[Limpieza de Datos]
+    
+    CleanData --> HandleNulls[Manejar valores nulos]
+    HandleNulls --> NormalizeFormats[Normalizar formatos]
+    NormalizeFormats --> RemoveDuplicates[Eliminar duplicados]
+    
+    RemoveDuplicates --> MapDIVIPOLA[Mapeo NIT → DIVIPOLA]
+    MapDIVIPOLA --> CheckMapping{¿Mapeo exitoso?}
+    
+    CheckMapping -->|< 90%| WarningMapping[Advertencia: Mapeo incompleto]
+    WarningMapping --> ContinueMapping[Continuar con código genérico]
+    CheckMapping -->|≥ 90%| ContinueMapping
+    
+    ContinueMapping --> CalculateTipologia[Calcular Tipología Municipal]
+    CalculateTipologia --> AssignTipologia[Asignar A/B/C/D según recaudo]
+    
+    AssignTipologia --> FeatureEngineering[Feature Engineering]
+    
+    FeatureEngineering --> CreateLags[Crear variables lag]
+    CreateLags --> CreateMA[Crear medias móviles]
+    CreateMA --> CreateDummies[Crear variables dummy]
+    CreateDummies --> CreateTemporal[Crear variables temporales]
+    
+    CreateTemporal --> Aggregate[Agregación Temporal]
+    Aggregate --> AggDaily[Agregación diaria]
+    AggDaily --> AggWeekly[Agregación semanal]
+    AggWeekly --> AggMonthly[Agregación mensual]
+    AggMonthly --> AggBimonthly[Agregación bimensual]
+    
+    AggBimonthly --> ValidateData{¿Datos válidos?}
+    
+    ValidateData -->|No| ErrorValidation[Error: Validación fallida]
+    ErrorValidation --> End
+    
+    ValidateData -->|Sí| LoadEntidades[Cargar entidades territoriales]
+    LoadEntidades --> LoadRecaudos[Cargar recaudos históricos]
+    LoadRecaudos --> LoadConceptos[Cargar conceptos tributarios]
+    LoadConceptos --> LoadFestividades[Cargar festividades]
+    
+    LoadFestividades --> VerifyLoad{¿Carga exitosa?}
+    
+    VerifyLoad -->|No| ErrorLoad[Error: Carga a BD fallida]
+    ErrorLoad --> Rollback[Rollback transacción]
+    Rollback --> End
+    
+    VerifyLoad -->|Sí| LogSuccess[Log: ETL completado]
+    LogSuccess --> UpdateStats[Actualizar estadísticas]
+    UpdateStats --> Success([Fin Exitoso])
+    
+    %% Estilos
+    classDef processStyle fill:#3b82f6,stroke:#1e40af,color:#fff
+    classDef decisionStyle fill:#f59e0b,stroke:#d97706,color:#fff
+    classDef errorStyle fill:#ef4444,stroke:#dc2626,color:#fff
+    classDef successStyle fill:#10b981,stroke:#047857,color:#fff
+    
+    class LoadFile,ExtractData,CleanData,HandleNulls,NormalizeFormats,RemoveDuplicates,MapDIVIPOLA,CalculateTipologia,AssignTipologia,FeatureEngineering,CreateLags,CreateMA,CreateDummies,CreateTemporal,Aggregate,AggDaily,AggWeekly,AggMonthly,AggBimonthly,LoadEntidades,LoadRecaudos,LoadConceptos,LoadFestividades,LogSuccess,UpdateStats processStyle
+    class ValidateFile,CheckColumns,CheckMapping,ValidateData,VerifyLoad decisionStyle
+    class ErrorFile,ErrorColumns,WarningMapping,ErrorValidation,ErrorLoad,Rollback,End errorStyle
+    class Success successStyle

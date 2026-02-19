@@ -1,0 +1,109 @@
+erDiagram
+    USERS ||--o{ ENTIDADES_TERRITORIALES : "gestiona"
+    ENTIDADES_TERRITORIALES ||--o{ RECAUDOS_HISTORICOS : "tiene"
+    ENTIDADES_TERRITORIALES ||--o{ PREDICCIONES : "tiene"
+    ENTIDADES_TERRITORIALES ||--o{ KPIS_HISTORICOS : "tiene"
+    ENTIDADES_TERRITORIALES ||--o{ EVENTOS_DRIFT : "tiene"
+    RECAUDOS_HISTORICOS }o--|| CONCEPTOS_TRIBUTARIOS : "clasifica"
+    FESTIVIDADES ||--o{ RECAUDOS_HISTORICOS : "afecta"
+
+    USERS {
+        int id PK
+        string openId UK "OAuth ID"
+        string name
+        string email
+        string loginMethod
+        enum role "admin, user"
+        timestamp createdAt
+        timestamp updatedAt
+        timestamp lastSignedIn
+    }
+
+    ENTIDADES_TERRITORIALES {
+        int id PK
+        string codigoDIVIPOLA UK "Código DANE"
+        string nombre
+        string nit
+        enum tipologia "A, B, C, D"
+        string departamento
+        string municipio
+        decimal recaudoAnualPromedio
+        timestamp createdAt
+        timestamp updatedAt
+    }
+
+    RECAUDOS_HISTORICOS {
+        int id PK
+        int entidadId FK
+        date fecha
+        int vigencia
+        int mes
+        int trimestre
+        int diaSemana
+        decimal valorRecaudo "COP"
+        decimal lag1
+        decimal lag3
+        decimal lag6
+        decimal lag12
+        decimal ma3 "Media móvil 3"
+        decimal ma6 "Media móvil 6"
+        decimal ma12 "Media móvil 12"
+        boolean esFestividad
+        boolean esFinDeSemana
+        int conceptoId FK
+        timestamp createdAt
+    }
+
+    PREDICCIONES {
+        int id PK
+        int entidadId FK
+        date fechaPrediccion
+        enum horizonte "diario, semanal, mensual, bimensual"
+        decimal yPredXgboost
+        decimal yPredLstm
+        decimal yPredEnsemble
+        decimal limiteInferior "IC 95%"
+        decimal limiteSuperior "IC 95%"
+        decimal confianza
+        timestamp createdAt
+    }
+
+    KPIS_HISTORICOS {
+        int id PK
+        int entidadId FK
+        date fecha
+        enum periodoCalculo "diario, semanal, mensual, bimensual"
+        decimal iep "Índice Eficiencia Predictiva"
+        decimal mapeLocal "MAPE Local %"
+        decimal mapeGlobal "MAPE Global %"
+        enum semaforoRiesgo "verde, amarillo, rojo"
+        decimal recaudoReal
+        decimal recaudoPronosticado
+        timestamp createdAt
+    }
+
+    EVENTOS_DRIFT {
+        int id PK
+        int entidadId FK
+        date fechaDeteccion
+        enum severidad "bajo, medio, alto, critico"
+        decimal metricaDrift
+        string descripcion
+        boolean requiereReentrenamiento
+        timestamp createdAt
+    }
+
+    CONCEPTOS_TRIBUTARIOS {
+        int id PK
+        string nombre UK
+        string descripcion
+        timestamp createdAt
+    }
+
+    FESTIVIDADES {
+        int id PK
+        date fecha UK
+        string nombre
+        string descripcion
+        timestamp createdAt
+    }

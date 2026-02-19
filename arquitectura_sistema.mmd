@@ -1,0 +1,115 @@
+graph TB
+    subgraph "Frontend - React 19"
+        UI[Dashboard Ejecutivo]
+        DL[DataLoader Component]
+        Charts[Visualizaciones Recharts]
+        Selector[Selector de Contexto]
+    end
+
+    subgraph "Backend - Node.js + tRPC"
+        API[API tRPC]
+        AuthRouter[Auth Router]
+        ETLRouter[ETL Router]
+        EntidadesRouter[Entidades Router]
+        RecaudosRouter[Recaudos Router]
+        PrediccionesRouter[Predicciones Router]
+        KPIsRouter[KPIs Router]
+        DriftRouter[Drift Router]
+        DashboardRouter[Dashboard Router]
+    end
+
+    subgraph "Capa de Datos"
+        DB[(MySQL/TiDB)]
+        DBSchema[Drizzle ORM Schema]
+        DBFunctions[DB Functions]
+    end
+
+    subgraph "Pipeline ETL - Python"
+        ETLPipeline[ETL Pipeline]
+        DataExtract[Extracción]
+        DataTransform[Transformación]
+        DataLoad[Carga]
+        FeatureEng[Feature Engineering]
+    end
+
+    subgraph "Modelos ML - Python"
+        XGBoost[XGBoost Model]
+        LSTM[LSTM Model]
+        Ensemble[Ensemble System]
+        Predictions[Generación Predicciones]
+    end
+
+    subgraph "Fuentes de Datos"
+        Excel[BaseRentasCedidas.xlsx]
+        DANE[API DANE futuro]
+        MinHacienda[API MinHacienda futuro]
+    end
+
+    subgraph "Almacenamiento"
+        S3[S3 Storage]
+        ModelStorage[Modelos Entrenados]
+    end
+
+    %% Flujo de datos
+    Excel --> ETLPipeline
+    DANE -.-> ETLPipeline
+    MinHacienda -.-> ETLPipeline
+
+    ETLPipeline --> DataExtract
+    DataExtract --> DataTransform
+    DataTransform --> FeatureEng
+    FeatureEng --> DataLoad
+    DataLoad --> DB
+
+    DB --> XGBoost
+    DB --> LSTM
+    XGBoost --> Ensemble
+    LSTM --> Ensemble
+    Ensemble --> Predictions
+    Predictions --> DB
+
+    UI --> API
+    DL --> ETLRouter
+    Selector --> EntidadesRouter
+    Charts --> RecaudosRouter
+    Charts --> PrediccionesRouter
+    Charts --> KPIsRouter
+    Charts --> DriftRouter
+
+    API --> AuthRouter
+    API --> ETLRouter
+    API --> EntidadesRouter
+    API --> RecaudosRouter
+    API --> PrediccionesRouter
+    API --> KPIsRouter
+    API --> DriftRouter
+    API --> DashboardRouter
+
+    AuthRouter --> DBFunctions
+    ETLRouter --> ETLPipeline
+    EntidadesRouter --> DBFunctions
+    RecaudosRouter --> DBFunctions
+    PrediccionesRouter --> DBFunctions
+    KPIsRouter --> DBFunctions
+    DriftRouter --> DBFunctions
+    DashboardRouter --> DBFunctions
+
+    DBFunctions --> DBSchema
+    DBSchema --> DB
+
+    ModelStorage --> S3
+    XGBoost -.-> ModelStorage
+    LSTM -.-> ModelStorage
+
+    %% Estilos
+    classDef frontend fill:#3b82f6,stroke:#1e40af,color:#fff
+    classDef backend fill:#10b981,stroke:#047857,color:#fff
+    classDef data fill:#f59e0b,stroke:#d97706,color:#fff
+    classDef ml fill:#8b5cf6,stroke:#6d28d9,color:#fff
+    classDef external fill:#6b7280,stroke:#374151,color:#fff
+
+    class UI,DL,Charts,Selector frontend
+    class API,AuthRouter,ETLRouter,EntidadesRouter,RecaudosRouter,PrediccionesRouter,KPIsRouter,DriftRouter,DashboardRouter backend
+    class DB,DBSchema,DBFunctions data
+    class ETLPipeline,DataExtract,DataTransform,DataLoad,FeatureEng,XGBoost,LSTM,Ensemble,Predictions ml
+    class Excel,DANE,MinHacienda,S3,ModelStorage external

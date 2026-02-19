@@ -1,0 +1,48 @@
+# ============================================================
+# SAT-R Dashboard - .gitignore
+# ============================================================
+
+# Dependencias
+node_modules/
+.pnp/
+.pnp.js
+
+# Build
+dist/
+build/
+*.tsbuildinfo
+
+# Entorno
+.env
+.env.local
+.env.production
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+*.egg-info/
+
+# Datos pesados (fuente original — se extrae via ETL)
+BaseRentasCedidas.xlsx
+
+# Logs
+*.log
+npm-debug.log*
+
+# Misc
+.gemini/

@@ -1,0 +1,61 @@
+Para materializar su Modelo Ensemble Adaptativo en una solución de software en producción, es imperativo transitar del análisis econométrico puro hacia una arquitectura de **Machine Learning Operations (MLOps)** y **Desarrollo Full-Stack**. 
+
+El siguiente *Prompt Maestro* está diseñado con el máximo rigor técnico y arquitectónico. Transforma los hallazgos de su tesis (uso de XGBoost, LSTM, tipologías municipales y el Sistema de Alerta Temprana SAT-R) en directrices de ingeniería de software para que su agente "Manu IA" construya el aplicativo interactivo.
+
+Copie y pegue el siguiente bloque en su agente:
+
+***
+
+# PROMPT MAESTRO: ARQUITECTURA MLOPS Y DESARROLLO DE APLICATIVO SAT-R
+
+**ROL DEL AGENTE:**
+Actúa como un **Lead Machine Learning Engineer y Arquitecto de Software (Nivel Staff/PhD)**. Tu objetivo es diseñar y codificar un aplicativo web interactivo, escalable y orientado a la toma de decisiones ejecutivas (ordenadores del gasto, directivos de la ADRES y gestores municipales). 
+
+**OBJETIVO DEL SISTEMA:**
+Desarrollar el frontend y backend del **Sistema de Alerta Temprana y Recomendaciones (SAT-R)**. Este aplicativo debe permitir la consulta por municipio (1.102 en total), realizar análisis estadístico de series de tiempo y generar pronósticos (diario, semanal, mensual y bimensual) utilizando un ensamble avanzado de **XGBoost y LSTM**.
+
+Aplica rigurosamente las mejores prácticas de Ingeniería de Software para todo el ciclo de vida del dato (Data Lifecycle) basado en el estándar CRISP-DM y principios MLOps.
+
+---
+
+### MÓDULO 1: CICLO DE VIDA DEL DATO Y ARQUITECTURA ETL (DATA ENGINEERING)
+Para garantizar que el sistema compare el pronóstico con la realidad, debes implementar un pipeline de ingesta continua.
+1. **Ingesta Dinámica:** Crea clases en Python orientadas a objetos (OOP) para automatizar la extracción y carga (ETL) de nuevos datos transaccionales de recaudo.
+2. **Preprocesamiento Automatizado:** Implementa funciones de limpieza que manejen valores nulos y generen las variables sintéticas críticas: `lag_12` (rezago anual), medias móviles (3 y 6 meses) y variables *dummy* para el calendario de festividades municipales.
+3. **Base de Datos Analítica:** Estructura un modelo de datos (ej. esquema de estrella) que almacene `y_real`, `y_pred_xgboost`, `y_pred_lstm` y `y_pred_ensemble` indexado por `DIVIPOLA` (municipio) y `fecha`.
+
+### MÓDULO 2: MOTOR PREDICTIVO MULTI-HORIZONTE (XGBOOST + LSTM)
+El núcleo del aplicativo debe soportar granularidad múltiple para distintos perfiles de usuario.
+1. **Agregación Temporal:** El código debe permitir re-muestrear (*resample*) la serie de tiempo desde datos diarios hacia agregaciones semanales, mensuales y bimensuales (para suavizar el ruido administrativo).
+2. **Entrenamiento y Predicción:** 
+   * **XGBoost:** Configúralo para capturar relaciones no lineales y el impacto de variables exógenas (PIB, IPM, Festividades).
+   * **LSTM:** Diseña la arquitectura de la red neuronal (TensorFlow/Keras) para capturar secuencias complejas y dependencias a largo plazo.
+3. **Mecanismo de Monitoreo (Model Drift):** Crea una función que evalúe diariamente si la divergencia entre el recaudo real ingresado y el pronosticado supera un umbral estadístico, activando un reentrenamiento automatizado.
+
+### MÓDULO 3: INTERFAZ EJECUTIVA Y VISUALIZACIÓN INTERACTIVA
+El usuario final es un gerente; la interfaz (usa Streamlit o Dash) debe ser intuitiva, prescindiendo de código y enfocándose en la "Gestión Predictiva Territorial".
+Debe contener:
+1. **Selector de Contexto:** Filtro por Departamento, Municipio y Tipología Municipal (A: Consolidado, B: Emergente, C: Dependiente, D: Crítico).
+2. **Gráfico Interactivo Principal:** Una serie de tiempo dinámica (usando Plotly) que superponga el *Recaudo Real* (línea sólida) vs. *Recaudo Pronosticado* (línea punteada) con sus intervalos de confianza del 95% (bandas sombreadas).
+
+### MÓDULO 4: LOS 3 KPIs CRÍTICOS PARA GERENCIA
+El dashboard debe calcular y mostrar en tarjetas destacadas los siguientes 3 indicadores, actualizándose con cada nueva ingesta de datos:
+* **KPI 1: Índice de Eficiencia Predictiva (IEP):** Fórmula: `((Recaudo_Real - Recaudo_Pronosticado) / Recaudo_Pronosticado) * 100`. Define el estado del municipio (ej. un IEP negativo sostenido indica ineficiencia o déficit).
+* **KPI 2: MAPE Global y Local (Salud del Modelo):** Error Porcentual Absoluto Medio del último horizonte evaluado. Si el MAPE > 15%, debe emitir una advertencia de "Alta Incertidumbre".
+* **KPI 3: Semáforo de Riesgo Fiscal (Brecha de Recaudo):** 
+    * 🔴 **Rojo:** Recaudo Real cae por debajo del límite inferior del intervalo de confianza.
+    * 🟡 **Amarillo:** Recaudo Real < Pronóstico, pero dentro del intervalo.
+    * 🟢 **Verde:** Recaudo Real >= Pronóstico.
+
+### INSTRUCCIÓN DE EJECUCIÓN PARA MANU IA:
+"Inicia tu trabajo entregando la **Arquitectura del Sistema (Diagrama de Componentes)** en texto y desarrolla el primer script en Python (`data_pipeline.py`) que contenga la clase de ingesta de datos, la generación de agregaciones temporales (diario a bimensual) y la función de cálculo de los 3 KPIs mencionados."
+
+***
+
+### Justificación Académica y Técnica del Prompt
+
+Al instruir a la IA con este diseño, usted está garantizando que la aplicación refleje los aportes de su tesis doctoral/maestría:
+
+1. **Gestión Predictiva Territorial:** Al obligar a la IA a incluir un selector de "Tipologías Municipales", la aplicación reconoce que un municipio rural no se comporta ni se audita igual que una ciudad capital, validando el marco del *Federalismo Fiscal* de Oates.
+2. **Ingeniería de Software para Series de Tiempo:** La solicitud explícita de un módulo que compare diariamente la nueva "realidad" contra el "pronóstico" implementa una técnica de *Backtesting* y monitoreo de *Model Drift*, esencial para mantener viva la utilidad del modelo XGBoost y LSTM a lo largo del tiempo sin degradación de la métrica MAPE.
+3. **Traducción de Datos a Gobernanza:** Los gerentes no toman decisiones mirando la función de pérdida de un LSTM. Al requerir que la aplicación traduzca las salidas matemáticas al **IEP (Índice de Eficiencia Predictiva)** y a un **Semáforo de Riesgo Fiscal**, usted convierte el modelado estadístico en un Sistema de Soporte a la Decisión Administrativa (SAT-R) completamente funcional.
