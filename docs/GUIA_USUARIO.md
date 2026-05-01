@@ -1,4 +1,4 @@
-# Guía de Usuario - Sistema SAT-R
+# Guía de Usuario - Sistema STAR
 
 **Sistema de Alerta Temprana y Recomendaciones**  
 **Pronóstico de Recaudos Municipales - Rentas Cedidas**
@@ -7,7 +7,7 @@
 
 ## Introducción
 
-Bienvenido al Sistema de Alerta Temprana y Recomendaciones (SAT-R), una herramienta diseñada para ayudar a los funcionarios públicos y tomadores de decisiones a monitorear y pronosticar los recaudos de rentas cedidas a nivel municipal en Colombia.
+Bienvenido al Sistema de Alerta y Recomendación Territorial (STAR), una herramienta diseñada para ayudar a los funcionarios públicos y tomadores de decisiones a monitorear y pronosticar los recaudos de rentas cedidas a nivel municipal en Colombia.
 
 Esta guía le ayudará a navegar por el sistema y aprovechar al máximo sus funcionalidades.
 

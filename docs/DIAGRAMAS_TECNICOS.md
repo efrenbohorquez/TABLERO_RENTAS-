@@ -1,4 +1,4 @@
-# Diagramas Técnicos del Sistema SAT-R
+# Diagramas Técnicos del Sistema STAR
 
 **Autor**: Manus AI  
 **Fecha**: Febrero 19, 2026  
@@ -8,13 +8,13 @@
 
 ## Introducción
 
-Este documento presenta los diagramas técnicos completos del **Sistema de Alerta Temprana y Recomendaciones (SAT-R)**, una plataforma integral de pronóstico de recaudos municipales con capacidades avanzadas de Machine Learning. Los diagramas proporcionan una representación visual de la arquitectura del sistema, el modelo de datos, los flujos de procesos y las secuencias de operaciones críticas.
+Este documento presenta los diagramas técnicos completos del **Sistema de Alerta y Recomendación Territorial (STAR)**, una plataforma integral de pronóstico de recaudos municipales con capacidades avanzadas de Machine Learning. Los diagramas proporcionan una representación visual de la arquitectura del sistema, el modelo de datos, los flujos de procesos y las secuencias de operaciones críticas.
 
 ---
 
 ## 1. Diagrama de Arquitectura del Sistema
 
-El diagrama de arquitectura muestra la estructura completa del sistema SAT-R, incluyendo las capas de presentación, lógica de negocio, datos y Machine Learning.
+El diagrama de arquitectura muestra la estructura completa del sistema STAR, incluyendo las capas de presentación, lógica de negocio, datos y Machine Learning.
 
 ### Componentes Principales
 
@@ -47,7 +47,7 @@ El diagrama de arquitectura muestra la estructura completa del sistema SAT-R, in
 - Sistema de ensamble adaptativo
 - Generación de predicciones con intervalos de confianza del 95%
 
-![Arquitectura del Sistema SAT-R](../../artefactos/diagramas/arquitectura_sistema.png)
+![Arquitectura del Sistema STAR](../../artefactos/diagramas/arquitectura_sistema.png)
 
 ---
 
@@ -216,7 +216,7 @@ El diagrama de secuencia muestra el flujo completo de generación de prediccione
 
 ## 6. Conclusiones
 
-Los diagramas técnicos presentados proporcionan una visión completa de la arquitectura, datos, procesos y flujos del Sistema SAT-R. Estos diagramas son fundamentales para:
+Los diagramas técnicos presentados proporcionan una visión completa de la arquitectura, datos, procesos y flujos del Sistema STAR. Estos diagramas son fundamentales para:
 
 - **Onboarding de nuevos desarrolladores**: Comprensión rápida del sistema
 - **Documentación técnica**: Referencia para mantenimiento y evolución

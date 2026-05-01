@@ -1,6 +1,6 @@
 <div align="center">
 
-# 📊 SAT-R — Sistema de Alerta Temprana y Recomendaciones
+# 📊 STAR — Sistema de Alerta y Recomendación Territorial
 
 ### Plataforma Integral de Pronóstico de Recaudos Municipales · Rentas Cedidas
 
@@ -21,7 +21,7 @@
 
 ## 🎯 Descripción
 
-SAT-R es una plataforma analítica que combina un **pipeline ETL** (Python) con un **dashboard interactivo** (React/TypeScript) para visualizar y pronosticar el comportamiento del recaudo de rentas cedidas a nivel departamental y municipal en Colombia.
+STAR es una plataforma analítica que combina un **pipeline ETL** (Python) con un **dashboard interactivo** (React/TypeScript) para visualizar y pronosticar el comportamiento del recaudo de rentas cedidas a nivel departamental y municipal en Colombia.
 
 ### Características
 

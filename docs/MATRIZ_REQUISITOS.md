@@ -1,6 +1,6 @@
-# MATRIZ DE REQUISITOS DEL SISTEMA SAT-R
+# MATRIZ DE REQUISITOS DEL SISTEMA STAR
 
-**Sistema de Alerta Temprana y Recomendaciones**
+**Sistema de Alerta y Recomendación Territorial (STAR)**
 
 ---
 

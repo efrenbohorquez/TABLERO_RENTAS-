@@ -1,6 +1,6 @@
 # ÍNDICE GENERAL DE DOCUMENTACIÓN
 
-**Sistema de Alerta Temprana y Recomendaciones (SAT-R)**  
+**Sistema de Alerta y Recomendación Territorial (STAR)**  
 **Plataforma Integral de Pronóstico de Recaudos Municipales**
 
 ---
@@ -9,7 +9,7 @@
 
 | Campo | Valor |
 |-------|-------|
-| **Nombre del Proyecto** | Sistema de Alerta Temprana y Recomendaciones (SAT-R) |
+| **Nombre del Proyecto** | Sistema de Alerta y Recomendación Territorial (STAR) |
 | **Versión** | 1.0 |
 | **Fecha de Creación** | Febrero 2026 |
 | **Autor** | Manus AI |
@@ -21,7 +21,7 @@
 
 ## Estructura de la Documentación
 
-La documentación del proyecto SAT-R está organizada siguiendo la metodología CRISP-DM en **6 fases principales**, cada una con su carpeta dedicada que contiene documentos, scripts, artefactos y análisis correspondientes.
+La documentación del proyecto STAR está organizada siguiendo la metodología CRISP-DM en **6 fases principales**, cada una con su carpeta dedicada que contiene documentos, scripts, artefactos y análisis correspondientes.
 
 ```
 documentacion/
@@ -216,7 +216,7 @@ Evaluar el modelo y revisar los pasos ejecutados para construirlo, asegurando qu
 
 | Script | Descripción | Ubicación |
 |--------|-------------|-----------|
-| `satr.test.ts` | Tests unitarios del sistema SAT-R (18 tests) | `scripts/testing/satr.test.ts` |
+| `star.test.ts` | Tests unitarios del sistema STAR (18 tests) | `scripts/testing/star.test.ts` |
 | `auth.logout.test.ts` | Tests de autenticación (1 test) | `scripts/testing/auth.logout.test.ts` |
 
 ### Resultados de Testing
@@ -386,7 +386,7 @@ predictions = model.predict(historical_data, horizon='mensual')
 
 | Script | Lenguaje | Descripción | Ubicación |
 |--------|----------|-------------|-----------|
-| `satr.test.ts` | TypeScript | Tests del sistema SAT-R | `scripts/testing/` |
+| `star.test.ts` | TypeScript | Tests del sistema STAR | `scripts/testing/` |
 | `auth.logout.test.ts` | TypeScript | Tests de autenticación | `scripts/testing/` |
 
 **Uso**:
@@ -576,7 +576,7 @@ pnpm db:push  # Ejecutar migraciones de BD
 
 | Versión | Fecha | Descripción | Autor |
 |---------|-------|-------------|-------|
-| **1.0** | Febrero 2026 | Versión inicial del sistema SAT-R | Manus AI |
+| **1.0** | Febrero 2026 | Versión inicial del sistema STAR | Manus AI |
 
 ---
 

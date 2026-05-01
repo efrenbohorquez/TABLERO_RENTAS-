@@ -1,4 +1,4 @@
-# Sistema de Alerta Temprana y Recomendaciones (SAT-R)
+# Sistema de Alerta y Recomendación Territorial (STAR)
 
 **Plataforma Integral de Pronóstico de Recaudos Municipales**
 
@@ -8,7 +8,7 @@ Versión 1.0 | Febrero 2026
 
 ## Resumen Ejecutivo
 
-El Sistema de Alerta Temprana y Recomendaciones (SAT-R) es una plataforma integral desarrollada para el pronóstico de recaudos de rentas cedidas a nivel municipal en Colombia. El sistema combina técnicas avanzadas de Machine Learning, arquitectura MLOps y visualización ejecutiva para proporcionar predicciones precisas y alertas tempranas sobre el comportamiento fiscal de las entidades territoriales.
+El Sistema de Alerta y Recomendación Territorial (STAR) es una plataforma integral desarrollada para el pronóstico de recaudos de rentas cedidas a nivel municipal en Colombia. El sistema combina técnicas avanzadas de Machine Learning, arquitectura MLOps y visualización ejecutiva para proporcionar predicciones precisas y alertas tempranas sobre el comportamiento fiscal de las entidades territoriales.
 
 **Características principales**:
 
@@ -27,7 +27,7 @@ El sistema procesa datos reales del archivo **BaseRentasCedidas.xlsx** correspon
 
 ### Stack Tecnológico
 
-El sistema SAT-R está construido sobre una arquitectura moderna y escalable que combina las siguientes tecnologías:
+El sistema STAR está construido sobre una arquitectura moderna y escalable que combina las siguientes tecnologías:
 
 **Frontend**:
 - React 19 con TypeScript para interfaces de usuario reactivas
@@ -146,7 +146,7 @@ pipeline.run('/home/ubuntu/upload/BaseRentasCedidas.xlsx')
 
 ### Arquitectura de Modelos
 
-El sistema SAT-R implementa un enfoque de ensamble adaptativo que combina múltiples modelos para generar predicciones robustas:
+El sistema STAR implementa un enfoque de ensamble adaptativo que combina múltiples modelos para generar predicciones robustas:
 
 **Modelo 1: XGBoost (Simulado)**
 - Especializado en capturar relaciones no lineales entre variables
@@ -508,7 +508,7 @@ Se recomienda reentrenar los modelos cuando:
 
 ## Conclusiones
 
-El Sistema de Alerta Temprana y Recomendaciones (SAT-R) proporciona una plataforma robusta y escalable para el pronóstico de recaudos municipales en Colombia. La combinación de técnicas avanzadas de Machine Learning, arquitectura MLOps y visualización ejecutiva permite a los tomadores de decisiones anticipar riesgos fiscales y tomar acciones correctivas de manera oportuna.
+El Sistema de Alerta y Recomendación Territorial (STAR) proporciona una plataforma robusta y escalable para el pronóstico de recaudos municipales en Colombia. La combinación de técnicas avanzadas de Machine Learning, arquitectura MLOps y visualización ejecutiva permite a los tomadores de decisiones anticipar riesgos fiscales y tomar acciones correctivas de manera oportuna.
 
 **Logros principales**:
 - ✅ Pipeline ETL automatizado procesando datos reales de BaseRentasCedidas.xlsx

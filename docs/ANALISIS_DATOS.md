@@ -100,7 +100,7 @@ Los datos están a nivel departamental, no municipal (1,102 municipios). Verific
 
 ## Variables Sintéticas a Generar
 
-Según los requisitos del sistema SAT-R:
+Según los requisitos del sistema STAR:
 
 ### 1. Variables de Rezago
 - **lag_12**: Rezago de 12 meses (requiere datos de años anteriores)
@@ -136,4 +136,4 @@ Calendario de festividades nacionales y regionales:
 
 ## Conclusiones
 
-El dataset **BaseRentasCedidas** proporciona una base sólida para el desarrollo del sistema SAT-R, con datos transaccionales detallados y alta calidad. Los principales desafíos son la ausencia de código DIVIPOLA y tipología municipal, que pueden resolverse mediante tablas de mapeo y clasificación algorítmica. La granularidad diaria permite implementar pronósticos multi-horizonte según lo especificado en los requisitos.
+El dataset **BaseRentasCedidas** proporciona una base sólida para el desarrollo del sistema STAR, con datos transaccionales detallados y alta calidad. Los principales desafíos son la ausencia de código DIVIPOLA y tipología municipal, que pueden resolverse mediante tablas de mapeo y clasificación algorítmica. La granularidad diaria permite implementar pronósticos multi-horizonte según lo especificado en los requisitos.
