@@ -65,13 +65,34 @@ export interface DashboardData {
     resumen_global: ResumenGlobal[];
     recaudos_concepto_mes: RecaudoConceptoMes[];
     top_entidades: Entidad[];
+    xgboost_forecast?: XGBoostForecast[];
+    cv_metrics?: CVMetrics;
 }
 
-export type Tipologia = 'A' | 'B' | 'C' | 'D' | 'all';
+export interface XGBoostForecast {
+    mes: string;
+    mean: number;
+    lower: number;
+    upper: number;
+}
+
+export interface CVMetrics {
+    rmse: number;
+    mae: number;
+    r2_train: number;
+    folds: {
+        fold: number;
+        rmse: number;
+        mae: number;
+    }[];
+}
+
+export type Tipologia = 'A' | 'B' | 'C' | 'D' | 'E' | 'all';
 
 export const TIPOLOGIA_LABELS: Record<string, string> = {
     A: 'Consolidado',
     B: 'Emergente',
     C: 'Dependiente',
     D: 'Crítico',
+    E: 'Entid. Descentralizadas',
 };

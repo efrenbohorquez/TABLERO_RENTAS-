@@ -521,7 +521,7 @@ class ETLPipeline:
 if __name__ == "__main__":
     # Ejemplo de uso
     DATABASE_URL = os.getenv("DATABASE_URL", "mysql://user:password@localhost:3306/satr")
-    FILE_PATH = "/home/ubuntu/upload/BaseRentasCedidas.xlsx"
+    FILE_PATH = "C:\\Users\\efren\\Music\\TABLERO_RENTAS\\TABLERO_RENTAS-\\BaseRentasVF_2022_2025.xlsx"
     
     pipeline = ETLPipeline(DATABASE_URL)
     pipeline.run(FILE_PATH, nrows=5000)  # Procesar primeras 5000 filas como prueba

@@ -49,11 +49,11 @@
   --rojo-border: #fecaca;
   --rojo-text: #991b1b;
 
-  /* Tipologías */
   --tipologia-a: #3b82f6;
   --tipologia-b: #10b981;
   --tipologia-c: #f59e0b;
   --tipologia-d: #ef4444;
+  --tipologia-e: #8b5cf6;
 
   /* Charts */
   --chart-1: #3b82f6;
@@ -356,6 +356,7 @@ body {
 .badge-tipologia-b { background: #d1fae5; color: #047857; }
 .badge-tipologia-c { background: #fef3c7; color: #b45309; }
 .badge-tipologia-d { background: #fee2e2; color: #b91c1c; }
+.badge-tipologia-e { background: #f3e8ff; color: #7e22ce; }
 
 /* ========================================================================== */
 /* KPI CARDS                                                                   */

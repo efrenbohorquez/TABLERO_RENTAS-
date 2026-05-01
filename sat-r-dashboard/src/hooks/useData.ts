@@ -7,13 +7,27 @@ export function useData() {
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        fetch('/data/dashboard_data.json')
-            .then(res => {
+        Promise.all([
+            fetch('/data/dashboard_data.json').then(res => {
                 if (!res.ok) throw new Error(`HTTP ${res.status}`);
                 return res.json();
-            })
-            .then((json: DashboardData) => {
-                setData(json);
+            }),
+            fetch('/data/xgboost_forecast.json').then(res => {
+                if (!res.ok) return null; // If not found, just return null
+                return res.json();
+            }).catch(() => null),
+            fetch('/data/cv_metrics.json').then(res => {
+                if (!res.ok) return null;
+                return res.json();
+            }).catch(() => null)
+        ])
+            .then(([dashboardJson, xgboostJson, cvMetricsJson]) => {
+                const combinedData = {
+                    ...dashboardJson,
+                    xgboost_forecast: xgboostJson || [],
+                    cv_metrics: cvMetricsJson || null
+                };
+                setData(combinedData);
                 setLoading(false);
             })
             .catch(err => {

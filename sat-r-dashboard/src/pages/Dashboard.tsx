@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import {
     LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid,
-    Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell, AreaChart, Area,
+    Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell, AreaChart, Area, ComposedChart
 } from 'recharts';
 import {
     Building2, DollarSign, CheckCircle2, XCircle, AlertTriangle,
@@ -18,20 +18,24 @@ const COLORS_SEMAFORO = {
 };
 
 function formatCurrency(value: number): string {
-    if (value >= 1e12) return `$${(value / 1e12).toFixed(1)}T`;
-    if (value >= 1e9) return `$${(value / 1e9).toFixed(1)}B`;
-    if (value >= 1e6) return `$${(value / 1e6).toFixed(1)}M`;
-    if (value >= 1e3) return `$${(value / 1e3).toFixed(0)}K`;
-    return `$${value.toFixed(0)}`;
+    if (value >= 1e12) return `COP $${(value / 1e12).toFixed(1)}B`; // B de billones
+    if (value >= 1e9) return `COP $${(value / 1e9).toFixed(1)}MM`; // MM de miles de millones
+    if (value >= 1e6) return `COP $${(value / 1e6).toFixed(1)}M`; // M de millones
+    if (value >= 1e3) return `COP $${(value / 1e3).toFixed(0)}k`; // miles
+    return `COP $${value.toFixed(0)}`;
 }
 
-function formatFullCurrency(value: number): string {
-    return new Intl.NumberFormat('es-CO', {
+function formatFullCurrency(value: number | null | undefined): string {
+    if (value === null || value === undefined) return '';
+    const formatted = new Intl.NumberFormat('es-CO', {
         style: 'currency',
         currency: 'COP',
         minimumFractionDigits: 0,
         maximumFractionDigits: 0,
     }).format(value);
+
+    // Si Intl.NumberFormat solo devuelve el símbolo '$', le agregamos 'COP $' antes
+    return formatted.includes('COP') ? formatted : formatted.replace('$', 'COP $');
 }
 
 function formatDate(dateStr: string): string {
@@ -172,40 +176,52 @@ export default function Dashboard() {
         }));
     }, [data]);
 
-    // Predictions based on real data (simulated from actual revenue patterns)
+    // Real predictions from XGBoost pipeline
     const predictions = useMemo(() => {
-        if (!entityResumenMensual.length) return [];
-        const last6 = entityResumenMensual.slice(-6);
-        const result = last6.map(r => {
-            const xgboost = r.valor_total * (1 + (Math.random() * 0.06 - 0.03));
-            const lstm = r.valor_total * (1 + (Math.random() * 0.06 - 0.03));
-            const ensemble = (xgboost + lstm) / 2;
-            return {
-                mes: formatMonth(r.mes),
-                real: r.valor_total,
-                xgboost,
-                lstm,
-                ensemble,
-                limite_inferior: ensemble * 0.85,
-                limite_superior: ensemble * 1.15,
-            };
-        });
-        return result;
-    }, [entityResumenMensual]);
+        if (!data || !data.xgboost_forecast || data.xgboost_forecast.length === 0) return [];
+        
+        // Return only the forecast values with actual real data if available
+        // First get historical trend to maybe display actuals up to 2025
+        const lastYearTrend = data.resumen_global.slice(-12).map(r => ({
+            mes: formatMonth(r.mes),
+            real: r.valor_total,
+            xgboost: null,
+            limite_inferior: null,
+            limite_superior: null,
+            rango_confianza: null,
+        }));
 
-    // KPI metrics for selected entity
-    const entityKPIs = useMemo(() => {
-        if (!predictions.length) return [];
-        return predictions.map(p => {
-            const iep = p.real > 0 ? ((p.real - p.ensemble) / p.ensemble) * 100 : 0;
-            const mape = p.real > 0 ? Math.abs((p.real - p.ensemble) / p.real) * 100 : 0;
+        // Now append XGBoost 2026 predictions
+        const future = data.xgboost_forecast.map((p, index) => {
+            const dateStr = p.mes.split('T')[0]; // "2026-01-01"
+            
+            // Si es el primer punto de predicción, le pasamos el último valor real para que la línea se conecte
+            const isFirst = index === 0;
+            const prevReal = isFirst ? lastYearTrend[lastYearTrend.length - 1].real : null;
+
             return {
-                mes: p.mes,
-                iep: parseFloat(iep.toFixed(2)),
-                mape: parseFloat(mape.toFixed(2)),
+                mes: formatMonth(dateStr),
+                real: null, // we don't have real data for 2026 yet
+                xgboost: p.mean * 1e9,
+                limite_inferior: p.lower * 1e9,
+                limite_superior: p.upper * 1e9,
+                rango_confianza: [p.lower * 1e9, p.upper * 1e9],
             };
         });
-    }, [predictions]);
+
+        // Add a connector point so the XGBoost line and Area starts exactly from the last historical point
+        const connector = {
+            ...lastYearTrend[lastYearTrend.length - 1],
+            xgboost: lastYearTrend[lastYearTrend.length - 1].real,
+            rango_confianza: [lastYearTrend[lastYearTrend.length - 1].real, lastYearTrend[lastYearTrend.length - 1].real],
+        };
+        lastYearTrend[lastYearTrend.length - 1] = connector;
+
+        return [...lastYearTrend, ...future];
+    }, [data]);
+
+    // Global KPI metrics 
+    const cvMetrics = data?.cv_metrics || null;
 
     // =========================================================================
     // RENDER
@@ -218,7 +234,7 @@ export default function Dashboard() {
                     <div className="container">
                         <div className="header-content">
                             <div className="header-title">
-                                <h1>Sistema de Alerta Temprana y Recomendaciones</h1>
+                                <h1>Sistema de Alerta y Recomendación Territorial (STAR)</h1>
                                 <p>Pronóstico de Recaudos Municipales – Rentas Cedidas</p>
                             </div>
                         </div>
@@ -259,7 +275,7 @@ export default function Dashboard() {
                 <div className="container">
                     <div className="header-content">
                         <div className="header-title">
-                            <h1>Sistema de Alerta Temprana y Recomendaciones</h1>
+                            <h1>Sistema de Alerta y Recomendación Territorial (STAR)</h1>
                             <p>Pronóstico de Recaudos Municipales – Rentas Cedidas</p>
                         </div>
                         <div className="header-badge">
@@ -296,6 +312,7 @@ export default function Dashboard() {
                                     <option value="B">B – Emergente</option>
                                     <option value="C">C – Dependiente</option>
                                     <option value="D">D – Crítico</option>
+                                    <option value="E">E – Entid. Descentralizadas</option>
                                 </select>
                             </div>
 
@@ -571,38 +588,25 @@ export default function Dashboard() {
                         {/* === TAB: PREDICCIONES === */}
                         {activeTab === 'predictions' && (
                             <div>
-                                {!selectedEntidadId ? (
-                                    <div className="alert">
-                                        <div className="alert-icon"><AlertTriangle size={18} /></div>
-                                        <div>
-                                            <div className="alert-title">Selecciona una entidad</div>
-                                            <div className="alert-text">
-                                                Selecciona una entidad territorial para visualizar las predicciones basadas en sus datos reales
-                                            </div>
-                                        </div>
-                                    </div>
-                                ) : predictions.length > 0 ? (
+                                {predictions.length > 0 ? (
                                     <div className="card">
                                         <div className="card-header">
-                                            <div className="card-title">Pronósticos Multi-Modelo – {selectedEntidad?.nombre}</div>
-                                            <div className="card-description">XGBoost, LSTM y Ensemble con intervalos de confianza 95% (basado en datos reales)</div>
+                                            <div className="card-title">Pronóstico Global Rentas Cedidas 2026 (XGBoost)</div>
+                                            <div className="card-description">Predicción basada en modelo XGBoost optimizado con Optuna, incluyendo intervalos de confianza al 90%</div>
                                         </div>
                                         <div className="card-content">
                                             <div className="chart-container">
                                                 <ResponsiveContainer width="100%" height="100%">
-                                                    <LineChart data={predictions}>
+                                                    <ComposedChart data={predictions}>
                                                         <CartesianGrid strokeDasharray="3 3" stroke="var(--border-light)" />
                                                         <XAxis dataKey="mes" tick={{ fontSize: 11 }} />
                                                         <YAxis tickFormatter={formatCurrency} tick={{ fontSize: 11 }} />
-                                                        <Tooltip formatter={(v: number) => formatFullCurrency(v)} />
+                                                        <Tooltip formatter={(v: number | number[]) => Array.isArray(v) ? `${formatFullCurrency(v[0])} - ${formatFullCurrency(v[1])}` : formatFullCurrency(v)} />
                                                         <Legend />
-                                                        <Line type="monotone" dataKey="real" stroke="var(--text-primary)" strokeWidth={2.5} name="Real" dot={{ r: 4 }} />
-                                                        <Line type="monotone" dataKey="xgboost" stroke="var(--verde)" strokeDasharray="5 5" name="XGBoost" />
-                                                        <Line type="monotone" dataKey="lstm" stroke="var(--amarillo)" strokeDasharray="5 5" name="LSTM" />
-                                                        <Line type="monotone" dataKey="ensemble" stroke="var(--chart-1)" strokeWidth={2} name="Ensemble" />
-                                                        <Line type="monotone" dataKey="limite_inferior" stroke="#94a3b8" strokeDasharray="3 3" name="IC 95% Inferior" />
-                                                        <Line type="monotone" dataKey="limite_superior" stroke="#94a3b8" strokeDasharray="3 3" name="IC 95% Superior" />
-                                                    </LineChart>
+                                                        <Area type="monotone" dataKey="rango_confianza" fill="#94a3b8" fillOpacity={0.2} stroke="none" name="Intervalo de Confianza (90%)" connectNulls />
+                                                        <Line type="monotone" dataKey="real" stroke="var(--text-primary)" strokeWidth={2.5} name="Real (Histórico)" dot={{ r: 4 }} connectNulls />
+                                                        <Line type="monotone" dataKey="xgboost" stroke="var(--verde)" strokeWidth={2.5} strokeDasharray="5 5" name="Proyección XGBoost 2026" connectNulls />
+                                                    </ComposedChart>
                                                 </ResponsiveContainer>
                                             </div>
                                         </div>
@@ -611,8 +615,8 @@ export default function Dashboard() {
                                     <div className="alert">
                                         <div className="alert-icon"><AlertTriangle size={18} /></div>
                                         <div>
-                                            <div className="alert-title">Sin datos suficientes</div>
-                                            <div className="alert-text">No hay suficientes datos mensuales para generar predicciones para esta entidad.</div>
+                                            <div className="alert-title">Sin datos de predicción</div>
+                                            <div className="alert-text">No se ha podido cargar el archivo de pronósticos XGBoost.</div>
                                         </div>
                                     </div>
                                 )}
@@ -658,33 +662,51 @@ export default function Dashboard() {
                                     </div>
                                 </div>
 
-                                {/* KPI chart for selected entity */}
+                                {/* KPI chart for XGBoost CV Metrics */}
                                 <div className="card">
                                     <div className="card-header">
-                                        <div className="card-title">Métricas de Calidad – MAPE & IEP</div>
+                                        <div className="card-title">Métricas de Backtesting (XGBoost)</div>
                                         <div className="card-description">
-                                            {selectedEntidad
-                                                ? `Para: ${selectedEntidad.nombre}`
-                                                : 'Selecciona una entidad para ver métricas'}
+                                            Validación Cruzada Walk-Forward (Global)
                                         </div>
                                     </div>
                                     <div className="card-content">
-                                        {entityKPIs.length > 0 ? (
-                                            <div className="chart-container-sm">
-                                                <ResponsiveContainer width="100%" height="100%">
-                                                    <BarChart data={entityKPIs}>
-                                                        <CartesianGrid strokeDasharray="3 3" stroke="var(--border-light)" />
-                                                        <XAxis dataKey="mes" tick={{ fontSize: 11 }} />
-                                                        <YAxis tick={{ fontSize: 11 }} />
-                                                        <Tooltip />
-                                                        <Legend />
-                                                        <Bar dataKey="mape" fill="var(--chart-1)" name="MAPE (%)" radius={[4, 4, 0, 0]} />
-                                                        <Bar dataKey="iep" fill="var(--verde)" name="IEP (%)" radius={[4, 4, 0, 0]} />
-                                                    </BarChart>
-                                                </ResponsiveContainer>
-                                            </div>
+                                        {cvMetrics ? (
+                                            <>
+                                                <div className="stat-row" style={{ marginTop: 10 }}>
+                                                    <span className="stat-label">RMSE Promedio</span>
+                                                    <span className="stat-value">{formatCurrency(cvMetrics.rmse * 1e9)}</span>
+                                                </div>
+                                                <div className="stat-row">
+                                                    <span className="stat-label">MAE Promedio</span>
+                                                    <span className="stat-value">{formatCurrency(cvMetrics.mae * 1e9)}</span>
+                                                </div>
+                                                <div className="stat-row">
+                                                    <span className="stat-label">R² (Entrenamiento)</span>
+                                                    <span className="stat-value">{(cvMetrics.r2_train * 100).toFixed(1)}%</span>
+                                                </div>
+                                                
+                                                <div style={{ marginTop: 20 }}>
+                                                    <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: 10 }}>
+                                                        Desempeño por Fold (Validación):
+                                                    </div>
+                                                    <div className="chart-container-sm">
+                                                        <ResponsiveContainer width="100%" height="100%">
+                                                            <BarChart data={cvMetrics.folds.map(f => ({ fold: `Fold ${f.fold}`, rmse: f.rmse * 1e9, mae: f.mae * 1e9 }))}>
+                                                                <CartesianGrid strokeDasharray="3 3" stroke="var(--border-light)" />
+                                                                <XAxis dataKey="fold" tick={{ fontSize: 11 }} />
+                                                                <YAxis tickFormatter={formatCurrency} tick={{ fontSize: 11 }} />
+                                                                <Tooltip formatter={(v: number) => formatFullCurrency(v)} />
+                                                                <Legend />
+                                                                <Bar dataKey="rmse" fill="var(--chart-1)" name="RMSE" radius={[4, 4, 0, 0]} />
+                                                                <Bar dataKey="mae" fill="var(--verde)" name="MAE" radius={[4, 4, 0, 0]} />
+                                                            </BarChart>
+                                                        </ResponsiveContainer>
+                                                    </div>
+                                                </div>
+                                            </>
                                         ) : (
-                                            <div className="chart-empty">Selecciona una entidad para ver métricas de drift</div>
+                                            <div className="chart-empty">Métricas de backtesting no disponibles. Asegúrese de ejecutar el pipeline de XGBoost.</div>
                                         )}
                                     </div>
                                 </div>

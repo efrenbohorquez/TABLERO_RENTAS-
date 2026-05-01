@@ -8,7 +8,7 @@ import os
 import numpy as np
 from datetime import datetime
 
-EXCEL_FILE = os.path.join(os.path.dirname(__file__), "BaseRentasCedidas.xlsx")
+EXCEL_FILE = os.path.join(os.path.dirname(__file__), "BaseRentasVF_2022_2025.xlsx")
 OUTPUT_DIR = os.path.join(os.path.dirname(__file__), "sat-r-dashboard", "public", "data")
 
 def clean_col(col):
@@ -17,7 +17,7 @@ def clean_col(col):
 
 def main():
     print("=" * 60)
-    print("ETL: Extrayendo datos reales de BaseRentasCedidas.xlsx")
+    print("ETL: Extrayendo datos reales de BaseRentasVF_2022_2025.xlsx")
     print("=" * 60)
 
     # 1. LECTURA
@@ -31,20 +31,15 @@ def main():
     print("\n[2/6] Limpieza de datos...")
     df['FechaRecaudo'] = pd.to_datetime(df['FechaRecaudo'], errors='coerce')
     df['ValorRecaudo'] = pd.to_numeric(df['ValorRecaudo'], errors='coerce').fillna(0)
-    df['Vigencia'] = pd.to_numeric(df['Vigencia'], errors='coerce').fillna(2020).astype(int)
-    df['MesNombreCalendario'] = df['MesNombreCalendario'].astype(str).str.strip()
     df['NombreBeneficiarioAportante'] = df['NombreBeneficiarioAportante'].astype(str).str.strip()
     df['NitBeneficiarioAportante'] = df['NitBeneficiarioAportante'].astype(str).str.strip()
 
-    # Concepto tributario
-    if 'NombreConcepto' in df.columns:
-        df['NombreConcepto'] = df['NombreConcepto'].astype(str).str.strip()
-    if 'CódigoConcepto' in df.columns:
-        df['CódigoConcepto'] = df['CódigoConcepto'].astype(str).str.strip()
-    if 'NombreSubGrupoFuente' in df.columns:
-        df['NombreSubGrupoFuente'] = df['NombreSubGrupoFuente'].astype(str).str.strip()
-    if 'NombreCuentaBancaria' in df.columns:
-        df['NombreCuentaBancaria'] = df['NombreCuentaBancaria'].astype(str).str.strip()
+    # Columnas opcionales - limpiar si existen
+    for col in ['NombreConcepto', 'CódigoConcepto', 'NombreSubGrupoFuente',
+                'NombreGrupoFuente', 'TipoRegistro', 'Nombre_SubGrupo_Aportante',
+                'Nombre de Rubro', 'NombreCuentaBancaria']:
+        if col in df.columns:
+            df[col] = df[col].astype(str).str.strip()
 
     df = df.dropna(subset=['FechaRecaudo'])
     print(f"    Filas válidas: {len(df):,}")
@@ -63,9 +58,25 @@ def main():
         .sort_values('recaudo_total', ascending=False)
     )
 
-    # Clasificar tipologia basada en recaudo
-    q = entidades['recaudo_total'].quantile([0.25, 0.5, 0.75])
-    def assign_tipologia(val):
+    # Clasificar tipologia basada en recaudo de los MUNICIPIOS/DEPARTAMENTOS
+    
+    # Primero separamos a las entidades especiales descentralizadas
+    def es_entidad_especial(nombre):
+        n = str(nombre).upper()
+        keywords = ['MONOPOLIO', 'EMPRESA INDUSTRIAL', 'JUEGOS', 'LICORES', 'BENEFICENCIA', 'LOTERIA', 'EMPRESA PARA EL DESARROLLO']
+        return any(k in n for k in keywords)
+
+    entidades['es_especial'] = entidades['NombreBeneficiarioAportante'].apply(es_entidad_especial)
+    
+    # Cuartiles SOLO para los que NO son especiales
+    mun_recaudos = entidades[~entidades['es_especial']]['recaudo_total']
+    q = mun_recaudos.quantile([0.25, 0.5, 0.75]) if not mun_recaudos.empty else {0.25: 0, 0.5: 0, 0.75: 0}
+    
+    def assign_tipologia(row):
+        if row['es_especial']:
+            return 'E'
+            
+        val = row['recaudo_total']
         if val >= q[0.75]:
             return 'A'
         elif val >= q[0.5]:
@@ -75,7 +86,7 @@ def main():
         else:
             return 'D'
 
-    entidades['tipologia'] = entidades['recaudo_total'].apply(assign_tipologia)
+    entidades['tipologia'] = entidades.apply(assign_tipologia, axis=1)
 
     # Detectar tipo de division
     def detect_tipo(nombre):
