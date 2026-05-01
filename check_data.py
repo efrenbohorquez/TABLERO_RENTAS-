@@ -1,6 +1,6 @@
 import json
 
-with open('sat-r-dashboard/public/data/dashboard_data.json', encoding='utf-8') as f:
+with open('star-dashboard/public/data/dashboard_data.json', encoding='utf-8') as f:
     d = json.load(f)
 
 print("Ultimos 10 meses Globales:")

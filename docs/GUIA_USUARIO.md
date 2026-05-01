@@ -17,7 +17,7 @@ Esta guía le ayudará a navegar por el sistema y aprovechar al máximo sus func
 
 Para acceder al dashboard ejecutivo, abra su navegador web y visite la URL proporcionada por su administrador del sistema.
 
-**URL de ejemplo**: `https://sat-r-system.manus.space`
+**URL de ejemplo**: `https://star-system.manus.space`
 
 El sistema funciona mejor en navegadores modernos como Google Chrome, Mozilla Firefox o Microsoft Edge.
 

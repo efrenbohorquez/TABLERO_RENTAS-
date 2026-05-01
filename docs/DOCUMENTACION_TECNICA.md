@@ -117,7 +117,7 @@ El sistema genera automáticamente las siguientes variables para mejorar la capa
 
 ```bash
 # Procesar muestra de datos (primeros 5000 registros)
-cd /home/ubuntu/sat-r-system
+cd /home/ubuntu/star-system
 python3.11 -c "
 from python.etl_pipeline import ETLPipeline
 import os
@@ -418,7 +418,7 @@ PORT=3000
 
 **1. Clonar el repositorio y instalar dependencias**:
 ```bash
-cd /home/ubuntu/sat-r-system
+cd /home/ubuntu/star-system
 pnpm install
 ```
 

@@ -58,7 +58,7 @@ El sistema procesa datos reales del archivo **BaseRentasCedidas.xlsx**:
 ```
 TABLERO_RENTAS_CEDIDAS/
 │
-├── 📁 sat-r-dashboard/               # Aplicación React (Frontend)
+├── 📁 star-dashboard/               # Aplicación React (Frontend)
 │   ├── src/
 │   │   ├── pages/Dashboard.tsx        # Dashboard principal (450+ líneas)
 │   │   ├── hooks/useData.ts           # Hook para carga de datos JSON
@@ -114,7 +114,7 @@ cd TABLERO_RENTAS-
 ### 2. Instalar dependencias
 
 ```bash
-cd sat-r-dashboard
+cd star-dashboard
 npm install
 ```
 

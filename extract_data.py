@@ -9,7 +9,7 @@ import numpy as np
 from datetime import datetime
 
 EXCEL_FILE = os.path.join(os.path.dirname(__file__), "BaseRentasVF_2022_2025.xlsx")
-OUTPUT_DIR = os.path.join(os.path.dirname(__file__), "sat-r-dashboard", "public", "data")
+OUTPUT_DIR = os.path.join(os.path.dirname(__file__), "star-dashboard", "public", "data")
 
 def clean_col(col):
     """Remove leading/trailing whitespace and special chars from column names."""

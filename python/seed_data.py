@@ -1,5 +1,5 @@
 """
-Script de inicialización de datos de ejemplo para SAT-R
+Script de inicialización de datos de ejemplo para STAR
 Carga datos sintéticos para demostración del sistema
 """
 

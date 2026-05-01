@@ -7,11 +7,11 @@ Este documento detalla el Sistema de Pruebas de Calidad implementado para el **S
 
 ### 2.1 Pruebas de Frontend (React / Vite)
 El framework utilizado para las pruebas de interfaz es **Vitest** en conjunto con **React Testing Library**. 
-* **Ubicación:** `sat-r-dashboard/src/pages/Dashboard.test.tsx`
+* **Ubicación:** `star-dashboard/src/pages/Dashboard.test.tsx`
 * **Cobertura actual:** Smoke testing del componente principal (`Dashboard.tsx`). Verifica que la aplicación renderice correctamente los estados de carga y no produzca excepciones (crashes) inmediatos tras una actualización.
 * **Ejecución:**
   ```bash
-  cd sat-r-dashboard
+  cd star-dashboard
   npm run test
   ```
 

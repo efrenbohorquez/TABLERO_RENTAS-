@@ -365,7 +365,7 @@ Reportes disponibles:
 
 **Uso**:
 ```bash
-cd /home/ubuntu/sat-r-system
+cd /home/ubuntu/star-system
 python3.11 scripts/etl/etl_pipeline.py
 ```
 
@@ -391,7 +391,7 @@ predictions = model.predict(historical_data, horizon='mensual')
 
 **Uso**:
 ```bash
-cd /home/ubuntu/sat-r-system
+cd /home/ubuntu/star-system
 pnpm test
 ```
 
@@ -414,25 +414,25 @@ pnpm db:push  # Ejecutar migraciones de BD
 
 | Archivo | Descripción | Ubicación |
 |---------|-------------|-----------|
-| `server/routers.ts` | Routers tRPC (API endpoints) | `/home/ubuntu/sat-r-system/server/` |
-| `server/db.ts` | Funciones de base de datos | `/home/ubuntu/sat-r-system/server/` |
-| `drizzle/schema.ts` | Esquema de base de datos | `/home/ubuntu/sat-r-system/drizzle/` |
+| `server/routers.ts` | Routers tRPC (API endpoints) | `/home/ubuntu/star-system/server/` |
+| `server/db.ts` | Funciones de base de datos | `/home/ubuntu/star-system/server/` |
+| `drizzle/schema.ts` | Esquema de base de datos | `/home/ubuntu/star-system/drizzle/` |
 
 ### Frontend (React + TypeScript)
 
 | Archivo | Descripción | Ubicación |
 |---------|-------------|-----------|
-| `client/src/pages/Dashboard.tsx` | Dashboard ejecutivo | `/home/ubuntu/sat-r-system/client/src/pages/` |
-| `client/src/App.tsx` | Rutas y layout | `/home/ubuntu/sat-r-system/client/src/` |
-| `client/src/index.css` | Estilos globales | `/home/ubuntu/sat-r-system/client/src/` |
+| `client/src/pages/Dashboard.tsx` | Dashboard ejecutivo | `/home/ubuntu/star-system/client/src/pages/` |
+| `client/src/App.tsx` | Rutas y layout | `/home/ubuntu/star-system/client/src/` |
+| `client/src/index.css` | Estilos globales | `/home/ubuntu/star-system/client/src/` |
 
 ### Python (ETL y ML)
 
 | Archivo | Descripción | Ubicación |
 |---------|-------------|-----------|
-| `python/etl_pipeline.py` | Pipeline ETL | `/home/ubuntu/sat-r-system/python/` |
-| `python/ml_models.py` | Modelos predictivos | `/home/ubuntu/sat-r-system/python/` |
-| `python/seed_data.py` | Datos iniciales | `/home/ubuntu/sat-r-system/python/` |
+| `python/etl_pipeline.py` | Pipeline ETL | `/home/ubuntu/star-system/python/` |
+| `python/ml_models.py` | Modelos predictivos | `/home/ubuntu/star-system/python/` |
+| `python/seed_data.py` | Datos iniciales | `/home/ubuntu/star-system/python/` |
 
 ---
 
@@ -565,7 +565,7 @@ pnpm db:push  # Ejecutar migraciones de BD
 
 ### Recursos Adicionales
 
-- **Repositorio de Código**: `/home/ubuntu/sat-r-system`
+- **Repositorio de Código**: `/home/ubuntu/star-system`
 - **Documentación Técnica**: `DOCUMENTACION_TECNICA.md`
 - **Guía de Usuario**: `GUIA_USUARIO.md`
 - **README Principal**: `README.md`

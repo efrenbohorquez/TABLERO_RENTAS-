@@ -1,6 +1,6 @@
 """
-Pipeline ETL para el Sistema de Alerta Temprana y Recomendaciones (SAT-R)
-Autor: Sistema SAT-R
+Pipeline ETL para el Sistema de Alerta y Recomendación Territorial (STAR)
+Autor: Sistema STAR
 Fecha: 2026-02-19
 
 Este módulo implementa el pipeline completo de Extract-Transform-Load para:
@@ -31,7 +31,7 @@ logger = logging.getLogger(__name__)
 
 class ETLPipeline:
     """
-    Clase principal para el pipeline ETL del sistema SAT-R
+    Clase principal para el pipeline ETL del sistema STAR
     """
     
     def __init__(self, database_url: str):
@@ -488,7 +488,7 @@ class ETLPipeline:
         """
         try:
             logger.info("="*80)
-            logger.info("INICIANDO PIPELINE ETL - SISTEMA SAT-R")
+            logger.info("INICIANDO PIPELINE ETL - SISTEMA STAR")
             logger.info("="*80)
             
             # 1. Conectar a base de datos

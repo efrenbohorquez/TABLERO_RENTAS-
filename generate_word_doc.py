@@ -25,7 +25,7 @@ def main():
     doc.add_paragraph('El framework utilizado para las pruebas de interfaz es Vitest en conjunto con React Testing Library.')
     p = doc.add_paragraph(style='List Bullet')
     p.add_run('Ubicación: ').bold = True
-    p.add_run('sat-r-dashboard/src/pages/Dashboard.test.tsx')
+    p.add_run('star-dashboard/src/pages/Dashboard.test.tsx')
     
     p = doc.add_paragraph(style='List Bullet')
     p.add_run('Cobertura actual: ').bold = True
@@ -33,7 +33,7 @@ def main():
     
     p = doc.add_paragraph(style='List Bullet')
     p.add_run('Ejecución: ').bold = True
-    p.add_run('npm run test (dentro de la carpeta sat-r-dashboard)')
+    p.add_run('npm run test (dentro de la carpeta star-dashboard)')
 
     doc.add_heading('2.2 Pruebas de Backend y Pipeline (Python)', level=2)
     doc.add_paragraph('Se utiliza pytest para validar las salidas del proceso de Extracción, Transformación, Carga (ETL) y de Machine Learning (XGBoost).')

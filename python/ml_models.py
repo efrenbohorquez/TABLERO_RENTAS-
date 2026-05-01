@@ -1,5 +1,5 @@
 """
-Módulo de Modelos Predictivos para SAT-R
+Módulo de Modelos Predictivos para STAR
 Implementa modelos simplificados de XGBoost y LSTM para pronóstico de recaudos
 
 NOTA: Esta es una implementación simplificada para demostración.
@@ -103,7 +103,7 @@ class SimpleForecastModel:
     def calculate_kpis(self, real_value: float, predicted_value: float, 
                        confidence_interval: Tuple[float, float]) -> Dict:
         """
-        Calcula los 3 KPIs críticos del sistema SAT-R
+        Calcula los 3 KPIs críticos del sistema STAR
         
         Args:
             real_value: Valor real de recaudo
@@ -265,7 +265,7 @@ def generate_sample_kpis(entidad_id: int, num_periods: int = 30) -> pd.DataFrame
 if __name__ == "__main__":
     # Ejemplo de uso
     print("="*80)
-    print("DEMO: Modelo Predictivo SAT-R")
+    print("DEMO: Modelo Predictivo STAR")
     print("="*80)
     
     # Generar predicciones de ejemplo

@@ -231,5 +231,5 @@ El sistema está diseñado con principios de arquitectura limpia, separación de
 
 - Diagramas generados con Mermaid v10.x
 - Renderizados con `manus-render-diagram`
-- Ubicación: `/home/ubuntu/sat-r-system/artefactos/diagramas/`
+- Ubicación: `/home/ubuntu/star-system/artefactos/diagramas/`
 - Formatos disponibles: `.mmd` (fuente), `.png` (imagen)
