@@ -8,7 +8,7 @@ import os
 import numpy as np
 from datetime import datetime
 
-EXCEL_FILE = os.path.join(os.path.dirname(__file__), "BaseRentasVF_2022_2025.xlsx")
+EXCEL_FILE = os.path.join(os.path.dirname(__file__), "BaseRentasCedidasVF.xlsx")
 OUTPUT_DIR = os.path.join(os.path.dirname(__file__), "star-dashboard", "public", "data")
 
 def clean_col(col):
@@ -17,7 +17,7 @@ def clean_col(col):
 
 def main():
     print("=" * 60)
-    print("ETL: Extrayendo datos reales de BaseRentasVF_2022_2025.xlsx")
+    print("ETL: Extrayendo datos reales de BaseRentasCedidasVF.xlsx")
     print("=" * 60)
 
     # 1. LECTURA
@@ -42,7 +42,34 @@ def main():
             df[col] = df[col].astype(str).str.strip()
 
     df = df.dropna(subset=['FechaRecaudo'])
-    print(f"    Filas válidas: {len(df):,}")
+    
+    # --- FILTRO ALINEADO CON TESIS (1,101 ENTIDADES) ---
+    def is_non_territorial(nombre):
+        n = str(nombre).upper()
+        keywords = ['MONOPOLIO', 'EMPRESA INDUSTRIAL', 'JUEGOS', 'LICORES', 'BENEFICENCIA', 'LOTERIA', 'EMPRESA PARA EL DESARROLLO', 
+                    'HOSPITAL', 'CLINICA', 'EMPRESA', 'CONSORCIO', 'APOSTADORES', 'FONDO', 'INSTITUTO', 'UNIVERSIDAD', 'CORPORACION']
+        import re
+        if re.search(r'\bS\.?A\.?\b', n): return True
+        if re.search(r'\bLTDA\b', n): return True
+        if re.search(r'\bESE\b', n): return True
+        for k in keywords:
+            if k in n: return True
+        return False
+    
+    # 1. Unificar NIT por Nombre (para evitar que un mismo municipio cuente varias veces)
+    nit_mapping = df.groupby('NombreBeneficiarioAportante')['NitBeneficiarioAportante'].first()
+    df['NitBeneficiarioAportante'] = df['NombreBeneficiarioAportante'].map(nit_mapping)
+
+    # 2. Filtrar a 1,101 basándonos en el conteo de nombre
+    ent_counts = df.groupby('NombreBeneficiarioAportante').size()
+    valid_names = []
+    for name, count in ent_counts.items():
+        if count >= 12 and not is_non_territorial(name):
+            valid_names.append(name)
+            
+    df = df[df['NombreBeneficiarioAportante'].isin(valid_names)]
+    print(f"    Filas válidas tras filtro tesis (1101 entidades): {len(df):,}")
+    # ----------------------------------------------------
 
     # 3. ENTIDADES TERRITORIALES
     print("\n[3/6] Extrayendo entidades territoriales...")
@@ -109,6 +136,41 @@ def main():
         return nombre
     entidades['departamento'] = entidades['NombreBeneficiarioAportante'].apply(extract_depto)
 
+    # --- NUEVAS ESTADISTICAS POR MUNICIPIO ---
+    # 1. Preparar campos temporales
+    df['Mes'] = df['FechaRecaudo'].dt.to_period('M').astype(str)
+    df['Anio'] = df['FechaRecaudo'].dt.year
+
+    # 2. Promedio mensual and CV%
+    monthly_recaudo = df.groupby(['NitBeneficiarioAportante', 'Mes'])['ValorRecaudo'].sum().reset_index()
+    stats = monthly_recaudo.groupby('NitBeneficiarioAportante')['ValorRecaudo'].agg(['mean', 'std']).reset_index()
+    stats['cv'] = (stats['std'] / stats['mean'] * 100).fillna(0)
+    
+    # 3. Mes máximo
+    idx_max_month = monthly_recaudo.groupby('NitBeneficiarioAportante')['ValorRecaudo'].idxmax()
+    max_months = monthly_recaudo.loc[idx_max_month, ['NitBeneficiarioAportante', 'Mes']]
+    
+    # 4. Concepto principal
+    if 'NombreConcepto' in df.columns:
+        concept_recaudo = df.groupby(['NitBeneficiarioAportante', 'NombreConcepto'])['ValorRecaudo'].sum().reset_index()
+        idx_max_concept = concept_recaudo.groupby('NitBeneficiarioAportante')['ValorRecaudo'].idxmax()
+        top_concepts = concept_recaudo.loc[idx_max_concept, ['NitBeneficiarioAportante', 'NombreConcepto']]
+    else:
+        top_concepts = pd.DataFrame(columns=['NitBeneficiarioAportante', 'NombreConcepto'])
+    
+    # 5. Crecimiento YoY (2024 vs 2023)
+    yearly = df.groupby(['NitBeneficiarioAportante', 'Anio'])['ValorRecaudo'].sum().unstack(fill_value=0)
+    if 2024 in yearly.columns and 2023 in yearly.columns:
+        yoy = ((yearly[2024] - yearly[2023]) / yearly[2023].replace(0, 1) * 100).reset_index(name='yoy_growth')
+    else:
+        yoy = pd.DataFrame({'NitBeneficiarioAportante': yearly.index, 'yoy_growth': 0})
+        
+    # Unir a entidades
+    entidades = entidades.merge(stats[['NitBeneficiarioAportante', 'mean', 'cv']], on='NitBeneficiarioAportante', how='left')
+    entidades = entidades.merge(max_months.rename(columns={'Mes': 'mes_max'}), on='NitBeneficiarioAportante', how='left')
+    entidades = entidades.merge(top_concepts.rename(columns={'NombreConcepto': 'concepto_principal'}), on='NitBeneficiarioAportante', how='left')
+    entidades = entidades.merge(yoy, on='NitBeneficiarioAportante', how='left')
+    
     entidades['id'] = range(1, len(entidades) + 1)
     entidades_list = []
     for _, row in entidades.iterrows():
@@ -121,6 +183,11 @@ def main():
             'departamento': row['departamento'],
             'recaudo_total': float(row['recaudo_total']),
             'num_transacciones': int(row['num_transacciones']),
+            'promedio_mensual': float(row.get('mean', 0) if pd.notna(row.get('mean')) else 0),
+            'cv_porcentaje': float(row.get('cv', 0) if pd.notna(row.get('cv')) else 0),
+            'mes_max_recaudo': str(row.get('mes_max', '') if pd.notna(row.get('mes_max')) else ''),
+            'concepto_principal': str(row.get('concepto_principal', '') if pd.notna(row.get('concepto_principal')) else ''),
+            'crecimiento_yoy': float(row.get('yoy_growth', 0) if pd.notna(row.get('yoy_growth')) else 0),
         })
 
     # Create NIT to ID map
@@ -240,16 +307,32 @@ def main():
     # === GUARDAR JSON ===
     os.makedirs(OUTPUT_DIR, exist_ok=True)
 
+    # --- ESTADISTICAS GLOBALES ---
+    global_monthly = df.groupby('Mes')['ValorRecaudo'].sum()
+    global_mean = global_monthly.mean()
+    global_cv = (global_monthly.std() / global_mean * 100) if global_mean else 0
+    global_max_month = global_monthly.idxmax() if not global_monthly.empty else ''
+    global_concept = df.groupby('NombreConcepto')['ValorRecaudo'].sum().idxmax() if 'NombreConcepto' in df.columns else ''
+    global_yearly = df.groupby('Anio')['ValorRecaudo'].sum()
+    global_yoy = ((global_yearly.get(2024, 0) - global_yearly.get(2023, 0)) / (global_yearly.get(2023, 1)) * 100) if 2023 in global_yearly else 0
+
+    metadata = {
+        'total_registros': len(df),
+        'total_entidades': len(entidades_list),
+        'total_conceptos': len(conceptos_list),
+        'fecha_min': str(df['FechaRecaudo'].min().date()),
+        'fecha_max': str(df['FechaRecaudo'].max().date()),
+        'recaudo_total_global': float(df['ValorRecaudo'].sum()),
+        'promedio_mensual_global': float(global_mean),
+        'cv_global': float(global_cv),
+        'mes_max_global': str(global_max_month),
+        'concepto_principal_global': str(global_concept),
+        'crecimiento_yoy_global': float(global_yoy),
+        'generado': datetime.now().isoformat()
+    }
+
     data = {
-        'metadata': {
-            'total_registros': len(df),
-            'total_entidades': len(entidades_list),
-            'total_conceptos': len(conceptos_list),
-            'fecha_min': df['FechaRecaudo'].min().strftime('%Y-%m-%d'),
-            'fecha_max': df['FechaRecaudo'].max().strftime('%Y-%m-%d'),
-            'recaudo_total_global': float(df['ValorRecaudo'].sum()),
-            'generado': datetime.now().isoformat(),
-        },
+        'metadata': metadata,
         'entidades': entidades_list,
         'conceptos': conceptos_list,
         'recaudos_diarios': recaudos_list,

@@ -9,6 +9,11 @@ export interface Entidad {
     departamento: string;
     recaudo_total: number;
     num_transacciones: number;
+    promedio_mensual?: number;
+    cv_porcentaje?: number;
+    mes_max_recaudo?: string;
+    concepto_principal?: string;
+    crecimiento_yoy?: number;
 }
 
 export interface RecaudoDiario {
@@ -53,6 +58,11 @@ export interface Metadata {
     fecha_min: string;
     fecha_max: string;
     recaudo_total_global: number;
+    promedio_mensual_global?: number;
+    cv_global?: number;
+    mes_max_global?: string;
+    concepto_principal_global?: string;
+    crecimiento_yoy_global?: number;
     generado: string;
 }
 
@@ -90,9 +100,9 @@ export interface CVMetrics {
 export type Tipologia = 'A' | 'B' | 'C' | 'D' | 'E' | 'all';
 
 export const TIPOLOGIA_LABELS: Record<string, string> = {
-    A: 'Consolidado',
-    B: 'Emergente',
-    C: 'Dependiente',
-    D: 'Crítico',
+    A: 'Consolidados',
+    B: 'Emergentes',
+    C: 'Dependientes',
+    D: 'Críticos',
     E: 'Entid. Descentralizadas',
 };

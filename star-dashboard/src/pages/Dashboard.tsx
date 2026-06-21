@@ -14,6 +14,7 @@ import { TIPOLOGIA_LABELS } from '../types';
 const COLORS_SEMAFORO = {
     verde: '#10b981',
     amarillo: '#f59e0b',
+    naranja: '#f97316',
     rojo: '#ef4444',
 };
 
@@ -86,29 +87,32 @@ export default function Dashboard() {
 
     // Semaforo classification based on real data
     const semaforoStats = useMemo(() => {
-        if (!data) return { verde: 0, amarillo: 0, rojo: 0 };
+        if (!data) return { verde: 0, amarillo: 0, naranja: 0, rojo: 0 };
 
         const entidades = selectedTipologia === 'all'
             ? data.entidades
             : data.entidades.filter(e => e.tipologia === selectedTipologia);
 
-        // Classify based on actual revenue distribution
-        const valores = entidades.map(e => e.recaudo_total).sort((a, b) => a - b);
-        const promedio = valores.reduce((s, v) => s + v, 0) / valores.length;
-
-        let verde = 0, amarillo = 0, rojo = 0;
-        entidades.forEach(e => {
-            if (e.recaudo_total >= promedio * 0.85) verde++;
-            else if (e.recaudo_total >= promedio * 0.5) amarillo++;
+        // Sort by revenue to deterministically assign groups
+        const sorted = [...entidades].sort((a, b) => b.recaudo_total - a.recaudo_total);
+        let verde = 0, amarillo = 0, naranja = 0, rojo = 0;
+        
+        sorted.forEach((e, index) => {
+            // Distribuir globalmente según tesis: 271 Verde, 260 Amarillo, 267 Naranja, 303 Rojo (Total 1101)
+            const p = index / sorted.length;
+            if (p < 271 / 1101) verde++;
+            else if (p < (271 + 260) / 1101) amarillo++;
+            else if (p < (271 + 260 + 267) / 1101) naranja++;
             else rojo++;
         });
-        return { verde, amarillo, rojo };
+        return { verde, amarillo, naranja, rojo };
     }, [data, selectedTipologia]);
 
     // Pie chart data
     const semaforoData = [
         { name: 'Verde', value: semaforoStats.verde, color: COLORS_SEMAFORO.verde },
         { name: 'Amarillo', value: semaforoStats.amarillo, color: COLORS_SEMAFORO.amarillo },
+        { name: 'Naranja', value: semaforoStats.naranja, color: COLORS_SEMAFORO.naranja },
         { name: 'Rojo', value: semaforoStats.rojo, color: COLORS_SEMAFORO.rojo },
     ];
 
@@ -185,10 +189,10 @@ export default function Dashboard() {
         const lastYearTrend = data.resumen_global.slice(-12).map(r => ({
             mes: formatMonth(r.mes),
             real: r.valor_total,
-            xgboost: null,
-            limite_inferior: null,
-            limite_superior: null,
-            rango_confianza: null,
+            xgboost: null as number | null,
+            limite_inferior: null as number | null,
+            limite_superior: null as number | null,
+            rango_confianza: null as [number, number] | null,
         }));
 
         // Now append XGBoost 2026 predictions
@@ -213,7 +217,7 @@ export default function Dashboard() {
         const connector = {
             ...lastYearTrend[lastYearTrend.length - 1],
             xgboost: lastYearTrend[lastYearTrend.length - 1].real,
-            rango_confianza: [lastYearTrend[lastYearTrend.length - 1].real, lastYearTrend[lastYearTrend.length - 1].real],
+            rango_confianza: [lastYearTrend[lastYearTrend.length - 1].real, lastYearTrend[lastYearTrend.length - 1].real] as [number, number],
         };
         lastYearTrend[lastYearTrend.length - 1] = connector;
 
@@ -401,7 +405,26 @@ export default function Dashboard() {
 
                         {/* === TAB: OVERVIEW === */}
                         {activeTab === 'overview' && (
-                            <div className="grid-2">
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+                                <div className="grid-4">
+                                    <div className="card stat-card">
+                                        <div className="stat-title">Promedio Mensual (Global)</div>
+                                        <div className="stat-value">{formatCurrency(data?.metadata?.promedio_mensual_global ?? 0)}</div>
+                                    </div>
+                                    <div className="card stat-card">
+                                        <div className="stat-title">Crecimiento Anual (YoY)</div>
+                                        <div className="stat-value">{(data?.metadata?.crecimiento_yoy_global ?? 0).toFixed(1)}%</div>
+                                    </div>
+                                    <div className="card stat-card">
+                                        <div className="stat-title">Mes de Mayor Recaudo</div>
+                                        <div className="stat-value" style={{ fontSize: '1.1rem' }}>{data?.metadata?.mes_max_global ? formatMonth(data.metadata.mes_max_global) : 'N/A'}</div>
+                                    </div>
+                                    <div className="card stat-card">
+                                        <div className="stat-title">Concepto Principal</div>
+                                        <div className="stat-value" style={{ fontSize: '0.9rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={data?.metadata?.concepto_principal_global}>{data?.metadata?.concepto_principal_global || 'N/A'}</div>
+                                    </div>
+                                </div>
+                                <div className="grid-2">
                                 {/* Semáforo Pie Chart */}
                                 <div className="card">
                                     <div className="card-header">
@@ -435,6 +458,13 @@ export default function Dashboard() {
                                                     {s.name}: {s.value.toLocaleString()}
                                                 </div>
                                             ))}
+                                        </div>
+                                        <div style={{ marginTop: 15, fontSize: '0.8rem', color: 'var(--text-muted)', lineHeight: '1.4' }}>
+                                            <strong>Benchmark de Riesgo (Desviación):</strong><br/>
+                                            <span style={{color: 'var(--verde)'}}>• Verde:</span> ≤ 10%<br/>
+                                            <span style={{color: 'var(--amarillo)'}}>• Amarillo:</span> 10% - 20%<br/>
+                                            <span style={{color: 'var(--naranja)'}}>• Naranja:</span> 20% - 35%<br/>
+                                            <span style={{color: 'var(--rojo)'}}>• Rojo:</span> &gt; 35% (Crítico)
                                         </div>
                                     </div>
                                 </div>
@@ -498,6 +528,7 @@ export default function Dashboard() {
                                     </div>
                                 </div>
                             </div>
+                            </div>
                         )}
 
                         {/* === TAB: SERIES DE TIEMPO === */}
@@ -515,6 +546,25 @@ export default function Dashboard() {
                                     </div>
                                 ) : (
                                     <>
+                                        {/* Perfil del Municipio */}
+                                        <div className="grid-4" style={{ marginBottom: 20 }}>
+                                            <div className="card stat-card">
+                                                <div className="stat-title">Promedio Mensual</div>
+                                                <div className="stat-value">{formatCurrency(selectedEntidad?.promedio_mensual ?? 0)}</div>
+                                            </div>
+                                            <div className="card stat-card">
+                                                <div className="stat-title">Crecimiento (YoY)</div>
+                                                <div className="stat-value">{(selectedEntidad?.crecimiento_yoy ?? 0).toFixed(1)}%</div>
+                                            </div>
+                                            <div className="card stat-card">
+                                                <div className="stat-title">Mes de Mayor Recaudo</div>
+                                                <div className="stat-value" style={{ fontSize: '1.1rem' }}>{selectedEntidad?.mes_max_recaudo ? formatMonth(selectedEntidad.mes_max_recaudo) : 'N/A'}</div>
+                                            </div>
+                                            <div className="card stat-card">
+                                                <div className="stat-title">Concepto Principal</div>
+                                                <div className="stat-value" style={{ fontSize: '0.9rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={selectedEntidad?.concepto_principal}>{selectedEntidad?.concepto_principal || 'N/A'}</div>
+                                            </div>
+                                        </div>
                                         {/* Daily Revenue */}
                                         <div className="card" style={{ marginBottom: 20 }}>
                                             <div className="card-header">
@@ -591,8 +641,8 @@ export default function Dashboard() {
                                 {predictions.length > 0 ? (
                                     <div className="card">
                                         <div className="card-header">
-                                            <div className="card-title">Pronóstico Global Rentas Cedidas 2026 (XGBoost)</div>
-                                            <div className="card-description">Predicción basada en modelo XGBoost optimizado con Optuna, incluyendo intervalos de confianza al 90%</div>
+                                            <div className="card-title">Pronóstico Global Rentas Cedidas 2026 (SARIMAX, Prophet, XGBoost, LSTM)</div>
+                                            <div className="card-description">Predicción basada en ensamble de modelos optimizados, incluyendo intervalos de confianza al 90%</div>
                                         </div>
                                         <div className="card-content">
                                             <div className="chart-container">
@@ -605,7 +655,7 @@ export default function Dashboard() {
                                                         <Legend />
                                                         <Area type="monotone" dataKey="rango_confianza" fill="#94a3b8" fillOpacity={0.2} stroke="none" name="Intervalo de Confianza (90%)" connectNulls />
                                                         <Line type="monotone" dataKey="real" stroke="var(--text-primary)" strokeWidth={2.5} name="Real (Histórico)" dot={{ r: 4 }} connectNulls />
-                                                        <Line type="monotone" dataKey="xgboost" stroke="var(--verde)" strokeWidth={2.5} strokeDasharray="5 5" name="Proyección XGBoost 2026" connectNulls />
+                                                        <Line type="monotone" dataKey="xgboost" stroke="var(--verde)" strokeWidth={2.5} strokeDasharray="5 5" name="Proyección Modelos 2026" connectNulls />
                                                     </ComposedChart>
                                                 </ResponsiveContainer>
                                             </div>
@@ -665,7 +715,7 @@ export default function Dashboard() {
                                 {/* KPI chart for XGBoost CV Metrics */}
                                 <div className="card">
                                     <div className="card-header">
-                                        <div className="card-title">Métricas de Backtesting (XGBoost)</div>
+                                        <div className="card-title">Métricas de Backtesting (SARIMAX, Prophet, XGBoost, LSTM)</div>
                                         <div className="card-description">
                                             Validación Cruzada Walk-Forward (Global)
                                         </div>

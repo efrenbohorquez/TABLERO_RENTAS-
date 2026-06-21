@@ -58,6 +58,7 @@ def walk_forward_cv(X: pd.DataFrame, y: pd.Series, params: dict, n_folds: int = 
     n = len(X)
     fold_size = n // (n_folds + 1)
     rmse_list, mae_list = [], []
+    folds_data = []
 
     for fold in range(1, n_folds + 1):
         train_end  = fold * fold_size
@@ -78,13 +79,22 @@ def walk_forward_cv(X: pd.DataFrame, y: pd.Series, params: dict, n_folds: int = 
         )
         model.fit(X_train, y_train, verbose=False)
         preds = model.predict(X_test)
+        
+        r = np.sqrt(mean_squared_error(y_test, preds))
+        m = mean_absolute_error(y_test, preds)
 
-        rmse_list.append(np.sqrt(mean_squared_error(y_test, preds)))
-        mae_list.append(mean_absolute_error(y_test, preds))
+        rmse_list.append(r)
+        mae_list.append(m)
+        folds_data.append({
+            'fold': fold,
+            'rmse': float(r),
+            'mae': float(m)
+        })
 
     return {
         'rmse': float(np.mean(rmse_list)),
         'mae':  float(np.mean(mae_list)),
+        'folds': folds_data
     }
 
 
@@ -281,7 +291,7 @@ def main():
     
     # Usando el archivo especificado por el usuario
     base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    file_path = os.path.join(base_dir, 'BaseRentasVF_2022_2025.xlsx')
+    file_path = os.path.join(base_dir, 'BaseRentasCedidasVF.xlsx')
     
     if not os.path.exists(file_path):
         print(f"ERROR: No se encontró el archivo en {file_path}")
@@ -303,6 +313,9 @@ def main():
         df_recaudo = df[df['TipoRegistro'] == 'Recaudo'].copy()
     else:
         df_recaudo = df.copy()
+
+    # Convertir ValorRecaudo a numérico para evitar TypeError con strings
+    df_recaudo['ValorRecaudo'] = pd.to_numeric(df_recaudo['ValorRecaudo'], errors='coerce').fillna(0)
 
     ts = (
         df_recaudo
@@ -348,13 +361,27 @@ def main():
     print(f"\n  Total estimado 2026: ${forecast_df['mean'].sum():.1f} MM MM COP")
 
     # 6. Exportar resultados
-    print("\n[6/6] Exportando resultados...")
-    out_dir = os.path.join(base_dir, 'data', 'processed')
+    print("\n[6/6] Exportando resultados al dashboard...")
+    out_dir = os.path.join(base_dir, 'star-dashboard', 'public', 'data')
     os.makedirs(out_dir, exist_ok=True)
-    out_path = os.path.join(out_dir, 'forecast_2026_rentas_cedidas.csv')
-    forecast_df.to_csv(out_path)
     
     import json
+    
+    # Prepara JSON de forecast
+    forecast_list = []
+    for fecha, row in forecast_df.iterrows():
+        forecast_list.append({
+            'mes': fecha.strftime('%Y-%m-%dT00:00:00Z'),
+            'mean': float(row['mean']),
+            'lower': float(row['lower']),
+            'upper': float(row['upper'])
+        })
+        
+    forecast_path = os.path.join(out_dir, 'xgboost_forecast.json')
+    with open(forecast_path, 'w', encoding='utf-8') as f:
+        json.dump(forecast_list, f, indent=2)
+
+    # Prepara JSON de metrics
     metrics_path = os.path.join(out_dir, 'cv_metrics.json')
     with open(metrics_path, 'w', encoding='utf-8') as f:
         json.dump({
@@ -364,7 +391,7 @@ def main():
             'folds': cv_result.get('folds', [])
         }, f, indent=2)
         
-    print(f"   [OK] Archivo exportado en: {out_path}")
+    print(f"   [OK] Forecast exportado en: {forecast_path}")
     print(f"   [OK] Métricas exportadas en: {metrics_path}")
 
     # Visualizar

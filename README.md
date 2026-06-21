@@ -13,7 +13,7 @@
 
 ---
 
-**Dashboard ejecutivo interactivo** para el monitoreo y pronóstico de recaudos de rentas cedidas a entidades territoriales de Colombia. Construido con **datos reales** de 227,056 registros fiscales.
+**Dashboard ejecutivo interactivo** para el monitoreo y pronóstico de recaudos de rentas cedidas a entidades territoriales de Colombia. Construido con **datos reales** de 149,648 transacciones fiscales.
 
 </div>
 
@@ -29,12 +29,12 @@ STAR es una plataforma analítica que combina un **pipeline ETL** (Python) con u
 |---|---|
 | 🔄 **Pipeline ETL** | Extracción automatizada desde `BaseRentasCedidas.xlsx` → JSON |
 | 📈 **Dashboard Interactivo** | 4 tabs: Resumen General, Series de Tiempo, Predicciones, Model Drift |
-| 🎛️ **Selector de Contexto** | Filtros por Tipología Municipal (A/B/C/D) y Entidad Territorial |
+| 🎛️ **Selector de Contexto** | Filtros por Tipología Municipal (Consolidados/Emergentes/Dependientes/Críticos) y Entidad Territorial |
 | 📊 **6 tipos de gráficos** | PieChart, AreaChart, LineChart, BarChart horizontal/vertical |
-| 🚦 **Semáforo Fiscal** | Clasificación Verde/Amarillo/Rojo basada en datos reales |
-| 🤖 **Motor Predictivo** | Pronósticos XGBoost, LSTM y Ensemble con IC 95% |
+| 🚦 **Semáforo Fiscal** | Clasificación Verde/Amarillo/Naranja/Rojo basada en datos reales |
+| 🤖 **Motor Predictivo** | Pronósticos SARIMAX, Prophet, XGBoost, LSTM con IC 90% |
 | 📉 **Model Drift** | Monitoreo de divergencias por coeficiente de variación |
-| 🏛️ **4,849 entidades** | Departamentos, distritos y municipios monitoreados |
+| 🏛️ **1,101 entidades** | Entes territoriales monitoreados |
 
 ---
 
@@ -44,12 +44,12 @@ El sistema procesa datos reales del archivo **BaseRentasCedidas.xlsx**:
 
 | Métrica | Valor |
 |---------|-------|
-| **Registros procesados** | 227,056 |
-| **Entidades territoriales** | 4,849 |
+| **Transacciones procesadas** | 149,648 |
+| **Entes territoriales** | 1,101 |
 | **Conceptos tributarios** | 102 |
-| **Recaudos diarios** | 122,149 |
-| **Rango temporal** | Enero 2020 – Octubre 2025 |
-| **Recaudo total** | $15.99 billones COP |
+| **Recaudos diarios** | 82,001 |
+| **Rango temporal** | Octubre 2021 – Diciembre 2025 |
+| **Recaudo total** | $13.1 billones COP |
 
 ---
 
@@ -143,8 +143,8 @@ python extract_data.py
 
 | Filtro | Opciones |
 |--------|----------|
-| **Tipología** | A (Consolidado), B (Emergente), C (Dependiente), D (Crítico) |
-| **Entidad** | 4,849 departamentos, distritos y municipios |
+| **Tipología** | Consolidados (69), Emergentes (2), Dependientes (430), Críticos (600) |
+| **Entidad** | 1,101 entes territoriales |
 
 ### KPIs Principales
 
@@ -159,7 +159,7 @@ python extract_data.py
 
 1. **Resumen General** — PieChart del semáforo, Top 10 conceptos tributarios, tendencia mensual global
 2. **Series de Tiempo** — Recaudos diarios y resumen mensual por entidad seleccionada
-3. **Predicciones** — Pronósticos XGBoost, LSTM, Ensemble con intervalos de confianza del 95%
+3. **Predicciones** — Pronósticos SARIMAX, Prophet, XGBoost, LSTM con intervalos de confianza del 90%
 4. **Model Drift** — Estadísticas de divergencia y métricas MAPE/IEP por entidad
 
 ---
@@ -168,9 +168,10 @@ python extract_data.py
 
 | Color | Condición | Acción |
 |-------|-----------|--------|
-| 🟢 **Verde** | Recaudo ≥ 85% del promedio | Monitoreo rutinario |
-| 🟡 **Amarillo** | 50% ≤ Recaudo < 85% del promedio | Vigilancia reforzada |
-| 🔴 **Rojo** | Recaudo < 50% del promedio | Intervención requerida |
+| 🟢 **Verde (271)** | Desviación ≤ 10% del pronóstico | Monitoreo rutinario |
+| 🟡 **Amarillo (260)** | 10% < Desviación ≤ 20% del pronóstico | Vigilancia preventiva |
+| 🟠 **Naranja (267)** | 20% < Desviación ≤ 35% del pronóstico | Vigilancia reforzada |
+| 🔴 **Rojo (303)** | Desviación > 35% del pronóstico | Intervención requerida |
 
 ---
 
